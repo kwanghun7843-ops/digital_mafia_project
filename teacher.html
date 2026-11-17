@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>교사용 진행판 | 디지털 마피아</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar"><div><p class="eyebrow">TEACHER CONTROL DEMO</p><h1>교사용 진행판</h1></div><a class="btn ghost" href="index.html">학생 화면</a></header>
+  <main class="app-shell">
+    <div class="stepbar"><span>세션 2026</span><div class="progress"><span id="teacherProgress" style="width:44%"></span></div><span id="roundLabel">1라운드</span></div>
+    <div class="teacher-grid">
+      <section class="panel">
+        <p class="tag">현재 단계</p><h2 id="teacherTitle" class="round-title">출처의 밤</h2>
+        <div id="timer" class="timer">05:00</div>
+        <p class="lead">정적 시연판입니다. 버튼을 눌러 교사 진행 흐름을 확인할 수 있습니다.</p>
+        <div class="actions"><button id="pauseBtn" class="btn secondary">일시정지</button><button id="extendBtn" class="btn ghost">1분 연장</button><button id="nextBtn" class="btn">다음 라운드</button></div>
+      </section>
+      <section class="panel"><h2>수업 정보</h2><ul class="summary-list"><li>학급: 2학년 시연반</li><li>접속: 6/6팀</li><li>개인정보: 팀 번호·별칭만 사용</li><li>외부 API: 사용 안 함</li></ul></section>
+    </div>
+    <section class="panel"><h2>팀 제출 현황</h2><div id="teamList" class="team-list"></div></section>
+    <section class="panel"><h2>현재 공개 단서</h2><div id="cluePreview" class="evidence-grid"></div></section>
+  </main>
+  <footer><span>M2에서는 화면 흐름만 시연합니다. 실제 동기화·저장은 M3 GAS 단계에서 구현합니다.</span></footer>
+  <script>
+    const rounds=[
+      {title:"사건 관찰",label:"Notice",progress:18,clues:["E01 의심 게시물"]},
+      {title:"출처의 밤",label:"1라운드",progress:44,clues:["E01 사칭 계정","E03 공식 공지"]},
+      {title:"맥락의 밤",label:"2라운드",progress:58,clues:["E02 잘린 영상","E04 방송 대본"]},
+      {title:"확산의 밤",label:"3라운드",progress:72,clues:["E05 확산 기록","E06 익명 제보"]},
+      {title:"최종 판정",label:"Implement",progress:88,clues:["단서 전체","대응문 제출"]},
+      {title:"진실 공개",label:"Next",progress:100,clues:["정답·근거 비교","개인 성찰"]}
+    ];
+    let idx=1, seconds=300, paused=false;
+    const teams=["1팀","2팀","3팀","4팀","5팀","6팀"];
+    function render(){
+      const r=rounds[idx];
+      document.querySelector("#teacherTitle").textContent=r.title;
+      document.querySelector("#roundLabel").textContent=r.label;
+      document.querySelector("#teacherProgress").style.width=r.progress+"%";
+      document.querySelector("#cluePreview").innerHTML=r.clues.map((c,i)=>`<article class="evidence-card"><span class="evidence-id">${c.slice(0,3)}</span><h3>${c.slice(4)}</h3><p>${i?"두 번째 비교 단서":"현재 학생 화면에 공개된 자료"}</p></article>`).join("");
+      document.querySelector("#teamList").innerHTML=teams.map((t,i)=>`<div class="team-row"><strong>${t}</strong><span>${i<Math.min(idx+2,6)?"제출 완료":"작성 중"}</span><span class="pill ${i<Math.min(idx+2,6)?"":"wait"}">${i<Math.min(idx+2,6)?"완료":"대기"}</span></div>`).join("");
+    }
+    function clock(){ const m=String(Math.floor(seconds/60)).padStart(2,"0"), s=String(seconds%60).padStart(2,"0"); document.querySelector("#timer").textContent=`${m}:${s}`; if(!paused&&seconds>0) seconds--; }
+    document.querySelector("#pauseBtn").onclick=()=>{paused=!paused;document.querySelector("#pauseBtn").textContent=paused?"계속":"일시정지";};
+    document.querySelector("#extendBtn").onclick=()=>{seconds+=60;clock();};
+    document.querySelector("#nextBtn").onclick=()=>{idx=Math.min(rounds.length-1,idx+1);seconds=300;render();clock();};
+    setInterval(clock,1000); render(); clock();
+  </script>
+</body>
+</html>
+
